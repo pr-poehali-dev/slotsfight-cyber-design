@@ -1,11 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userBalance, setUserBalance] = useState(45230);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<number | null>(null);
 
   const navigationItems = [
     { id: 'home', label: 'Главная', icon: 'Home' },
@@ -18,13 +26,39 @@ const Index = () => {
   ];
 
   const featuredGames = [
-    { id: 1, name: 'Neon Slots', jackpot: '₽2,450,000', hot: true, provider: 'CyberGaming' },
-    { id: 2, name: 'Cyber Fortune', jackpot: '₽1,890,000', hot: true, provider: 'NeoSoft' },
-    { id: 3, name: 'Digital Rush', jackpot: '₽3,200,000', hot: true, provider: 'FuturePlay' },
-    { id: 4, name: 'Matrix Wins', jackpot: '₽950,000', hot: false, provider: 'TechGames' },
-    { id: 5, name: 'Electric Dreams', jackpot: '₽1,550,000', hot: false, provider: 'CyberGaming' },
-    { id: 6, name: 'Neon Paradise', jackpot: '₽780,000', hot: false, provider: 'NeoSoft' }
+    { id: 1, name: 'Neon Slots', jackpot: 2450000, hot: true, provider: 'CyberGaming', players: 3421, rating: 4.8, minBet: 10 },
+    { id: 2, name: 'Cyber Fortune', jackpot: 1890000, hot: true, provider: 'NeoSoft', players: 2891, rating: 4.7, minBet: 20 },
+    { id: 3, name: 'Digital Rush', jackpot: 3200000, hot: true, provider: 'FuturePlay', players: 4102, rating: 4.9, minBet: 50 },
+    { id: 4, name: 'Matrix Wins', jackpot: 950000, hot: false, provider: 'TechGames', players: 1823, rating: 4.5, minBet: 10 },
+    { id: 5, name: 'Electric Dreams', jackpot: 1550000, hot: false, provider: 'CyberGaming', players: 2341, rating: 4.6, minBet: 25 },
+    { id: 6, name: 'Neon Paradise', jackpot: 780000, hot: false, provider: 'NeoSoft', players: 1654, rating: 4.4, minBet: 15 }
   ];
+
+  const userStats = {
+    totalWins: 147,
+    totalPlayed: 523,
+    biggestWin: 89450,
+    level: 12,
+    xp: 67,
+    nextLevel: 100
+  };
+
+  const recentGames = [
+    { game: 'Neon Slots', result: 'win', amount: 12500, time: '5 мин назад' },
+    { game: 'Cyber Fortune', result: 'loss', amount: -5000, time: '18 мин назад' },
+    { game: 'Digital Rush', result: 'win', amount: 34200, time: '1 час назад' },
+    { game: 'Matrix Wins', result: 'win', amount: 8900, time: '2 часа назад' }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      featuredGames.forEach((_, index) => {
+        const randomIncrease = Math.floor(Math.random() * 5000);
+        featuredGames[index].jackpot += randomIncrease;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const tournaments = [
     { id: 1, name: 'Cyber Championship', prize: '₽5,000,000', players: 2847, endsIn: '2д 14ч' },
@@ -91,18 +125,235 @@ const Index = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <Button variant="outline" className="neon-border">
-                Вход
-              </Button>
-              <Button className="bg-gradient-to-r from-primary to-accent hover:opacity-90">
-                Регистрация
-              </Button>
+              {isLoggedIn ? (
+                <>
+                  <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg neon-border bg-background/50">
+                    <Icon name="Wallet" size={20} className="text-primary" />
+                    <span className="font-bold text-primary">{userBalance.toLocaleString('ru')} ₽</span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="neon-border"
+                    onClick={() => setShowProfile(!showProfile)}
+                  >
+                    <Icon name="User" size={18} className="md:mr-2" />
+                    <span className="hidden md:inline">Профиль</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    className="neon-border"
+                    onClick={() => setIsLoggedIn(true)}
+                  >
+                    Вход
+                  </Button>
+                  <Button 
+                    className="bg-gradient-to-r from-primary to-accent hover:opacity-90 hidden md:flex"
+                    onClick={() => setIsLoggedIn(true)}
+                  >
+                    Регистрация
+                  </Button>
+                </>
+              )}
+              
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild className="md:hidden">
+                  <Button variant="ghost" size="icon">
+                    <Icon name="Menu" size={24} />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] bg-background/95 backdrop-blur-xl border-primary/30">
+                  <div className="flex flex-col gap-4 mt-8">
+                    {isLoggedIn && (
+                      <div className="flex items-center gap-3 p-4 rounded-lg neon-border bg-background/50 mb-4">
+                        <Icon name="Wallet" size={24} className="text-primary" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Баланс</p>
+                          <p className="font-bold text-xl text-primary">{userBalance.toLocaleString('ru')} ₽</p>
+                        </div>
+                      </div>
+                    )}
+                    {navigationItems.map((item) => (
+                      <Button
+                        key={item.id}
+                        variant={activeSection === item.id ? "default" : "ghost"}
+                        onClick={() => {
+                          setActiveSection(item.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="justify-start gap-3 text-lg"
+                      >
+                        <Icon name={item.icon as any} size={20} />
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
       </nav>
 
       <main className="container mx-auto px-4 py-8">
+        {showProfile && isLoggedIn ? (
+          <section className="mb-16 animate-fade-in">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-4xl font-bold glow-cyan">Личный кабинет</h2>
+              <Button variant="outline" onClick={() => setShowProfile(false)}>
+                <Icon name="ArrowLeft" className="mr-2" size={18} />
+                Назад
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <Card className="neon-border bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Icon name="Wallet" className="text-primary" />
+                    Баланс
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold text-primary mb-2">{userBalance.toLocaleString('ru')} ₽</p>
+                  <div className="flex gap-2 mt-4">
+                    <Button className="flex-1 bg-gradient-to-r from-primary to-accent">Пополнить</Button>
+                    <Button variant="outline" className="flex-1 neon-border">Вывести</Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="neon-border bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Icon name="TrendingUp" className="text-accent" />
+                    Уровень {userStats.level}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Прогресс</span>
+                      <span className="font-semibold">{userStats.xp}/{userStats.nextLevel} XP</span>
+                    </div>
+                    <Progress value={userStats.xp} className="h-3" />
+                    <p className="text-xs text-muted-foreground">До уровня {userStats.level + 1}: {userStats.nextLevel - userStats.xp} XP</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="neon-border bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Icon name="Trophy" className="text-secondary" />
+                    Статистика
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Побед</span>
+                      <span className="font-bold text-accent">{userStats.totalWins}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Игр сыграно</span>
+                      <span className="font-bold">{userStats.totalPlayed}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Макс. выигрыш</span>
+                      <span className="font-bold text-primary">₽{userStats.biggestWin.toLocaleString('ru')}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Tabs defaultValue="recent" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="recent">Последние игры</TabsTrigger>
+                <TabsTrigger value="bonuses">Бонусы</TabsTrigger>
+                <TabsTrigger value="transactions">Транзакции</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="recent" className="space-y-4">
+                {recentGames.map((game, index) => (
+                  <Card key={index} className="neon-border bg-card/50 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                            game.result === 'win' ? 'bg-accent/20' : 'bg-muted'
+                          }`}>
+                            <Icon name={game.result === 'win' ? 'TrendingUp' : 'TrendingDown'} 
+                              className={game.result === 'win' ? 'text-accent' : 'text-muted-foreground'} 
+                            />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{game.game}</p>
+                            <p className="text-sm text-muted-foreground">{game.time}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-2xl font-bold ${
+                            game.result === 'win' ? 'text-accent' : 'text-muted-foreground'
+                          }`}>
+                            {game.amount > 0 ? '+' : ''}{game.amount.toLocaleString('ru')} ₽
+                          </p>
+                          <Badge variant={game.result === 'win' ? 'default' : 'secondary'}>
+                            {game.result === 'win' ? 'Выигрыш' : 'Проигрыш'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="bonuses">
+                <div className="space-y-4">
+                  {bonuses.map((bonus) => (
+                    <Card key={bonus.id} className="neon-border bg-card/50 backdrop-blur-sm">
+                      <CardHeader>
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                            <Icon name={bonus.icon as any} size={28} className="text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <CardTitle className="text-lg mb-2">{bonus.title}</CardTitle>
+                            <CardDescription>{bonus.description}</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-3">
+                          <code className="flex-1 px-4 py-2 bg-background/50 rounded border border-primary/30 font-mono text-primary">
+                            {bonus.code}
+                          </code>
+                          <Button size="sm" className="bg-gradient-to-r from-primary to-accent">
+                            Активировать
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="transactions">
+                <Card className="neon-border bg-card/50 backdrop-blur-sm">
+                  <CardContent className="p-6">
+                    <p className="text-center text-muted-foreground py-8">
+                      История транзакций пуста
+                    </p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </section>
+        ) : (
+          <>
         <section className="mb-16 relative overflow-hidden rounded-2xl neon-border p-12 bg-gradient-to-br from-primary/10 to-accent/10">
           <div className="relative z-10 text-center">
             <Badge className="mb-4 bg-accent text-white animate-float">
@@ -114,12 +365,27 @@ const Index = () => {
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Погрузитесь в мир киберспорта и слотов. Выигрывайте джекпоты, участвуйте в турнирах и получайте эксклюзивные бонусы
             </p>
-            <div className="flex gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary text-lg px-8 py-6 animate-glow-pulse">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-primary to-secondary text-lg px-8 py-6 animate-glow-pulse"
+                onClick={() => {
+                  if (!isLoggedIn) setIsLoggedIn(true);
+                  setActiveSection('games');
+                }}
+              >
                 <Icon name="Rocket" className="mr-2" />
                 Начать играть
               </Button>
-              <Button size="lg" variant="outline" className="neon-border-pink text-lg px-8 py-6">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="neon-border-pink text-lg px-8 py-6"
+                onClick={() => {
+                  if (!isLoggedIn) setIsLoggedIn(true);
+                  setActiveSection('promo');
+                }}
+              >
                 <Icon name="Gift" className="mr-2" />
                 Получить бонус
               </Button>
@@ -140,6 +406,7 @@ const Index = () => {
               <Card 
                 key={game.id} 
                 className="group hover:scale-105 transition-all duration-300 cursor-pointer neon-border bg-card/50 backdrop-blur-sm"
+                onClick={() => setSelectedGame(game.id)}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
@@ -153,15 +420,30 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg mb-4 flex items-center justify-center">
-                    <Icon name="Gamepad2" size={48} className="text-primary/50" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Джекпот</p>
-                      <p className="text-2xl font-bold text-primary">{game.jackpot}</p>
+                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                    <Icon name="Gamepad2" size={48} className="text-primary/50 group-hover:scale-110 transition-transform" />
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 text-xs bg-background/70 px-2 py-1 rounded">
+                      <Icon name="Users" size={12} className="text-primary" />
+                      <span>{game.players}</span>
                     </div>
-                    <Button size="sm" className="bg-gradient-to-r from-primary to-accent">
+                    <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs bg-background/70 px-2 py-1 rounded">
+                      <Icon name="Star" size={12} className="text-accent" />
+                      <span>{game.rating}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Джекпот</p>
+                        <p className="text-2xl font-bold text-primary">₽{game.jackpot.toLocaleString('ru')}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Мин. ставка</p>
+                        <p className="text-lg font-semibold">₽{game.minBet}</p>
+                      </div>
+                    </div>
+                    <Button size="sm" className="w-full bg-gradient-to-r from-primary to-accent group-hover:shadow-lg group-hover:shadow-primary/50">
+                      <Icon name="Play" size={16} className="mr-2" />
                       Играть
                     </Button>
                   </div>
@@ -304,6 +586,8 @@ const Index = () => {
             </Button>
           </div>
         </section>
+        </>
+        )}
       </main>
 
       <footer className="border-t border-primary/30 mt-16 py-8 bg-background/50 backdrop-blur-sm">
